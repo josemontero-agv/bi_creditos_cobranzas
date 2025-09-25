@@ -32,8 +32,15 @@
             <label class="form-label">Cliente</label>
             <input type="text" class="form-control" id="q" placeholder="Nombre, RUC, etc." />
           </div>
+          <div class="col-sm-4">
+            <label class="form-label">Cuentas (coma-separadas)</label>
+            <input type="text" class="form-control" id="accounts" placeholder="1212,122,1312" />
+          </div>
           <div class="col-sm-2 text-end">
             <button class="btn btn-primary w-100" id="btnBuscar" type="button">Buscar</button>
+          </div>
+          <div class="col-sm-3 ms-auto">
+            <div id="pager-top" class="text-end"></div>
           </div>
         </form>
         <div class="mt-3 text-end">
@@ -45,17 +52,16 @@
     <div class="card">
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-sm table-striped" id="tblReport">
+          <table class="table table-sm table-striped align-middle" id="tblReport" style="font-size: 0.9rem;">
             <thead>
               <tr>
                 <th>Fecha</th>
                 <th>Tipo de Documento</th>
                 <th>Número</th>
                 <th>Origen</th>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Cod. Cliente SAP</th>
-                <th>Ruc</th>
+                <th>Cuenta</th>
+                <th>Nombre de cuenta</th>
+                <th>DNI/RUC</th>
                 <th>Cliente</th>
                 <th>Monto</th>
                 <th>Monto residual</th>
@@ -88,7 +94,6 @@
       { key: 'invoice_origin', label: 'Origen' },
       { key: 'account_id/code', label: 'Cuenta/Código' },
       { key: 'account_id/name', label: 'Cuenta/Nombre' },
-      { key: 'patner_id/cod_client_sap', label: 'Socio/Cod. Cliente SAP' },
       { key: 'patner_id/vat', label: 'Socio/NIF' },
       { key: 'patner_id', label: 'Socio' },
       { key: 'amount_currency', label: 'Importe en moneda' },
@@ -110,10 +115,16 @@
       const start = document.getElementById('start').value;
       const end = document.getElementById('end').value;
       const q = document.getElementById('q').value;
+      const accounts = document.getElementById('accounts') ? document.getElementById('accounts').value : '';
+      const page = window.reportPage || 1;
+      const per_page = window.reportPerPage || 100;
       const p = new URLSearchParams();
       if(start) p.set('start', start);
       if(end) p.set('end', end);
       if(q) p.set('q', q);
+      if(accounts) p.set('accounts', accounts);
+      p.set('page', page);
+      p.set('per_page', per_page);
       return p.toString();
     }
     async function loadData(){
@@ -122,8 +133,31 @@
       if(!res.ok) return;
       const data = await res.json();
       renderRows(data.rows || []);
+      renderPager(data.total || 0, data.page || 1, data.per_page || 100);
       const excel = '/api/reports/export.xlsx' + (qs?('?' + qs):'');
       document.getElementById('btnExcel').setAttribute('href', excel);
+    }
+    function renderPager(total, page, perPage){
+      window.reportPage = page; window.reportPerPage = perPage;
+      const pages = Math.max(1, Math.ceil(total / perPage));
+      const windowSize = 15;
+      let start = Math.max(1, page - Math.floor(windowSize/2));
+      let end = Math.min(pages, start + windowSize - 1);
+      if (end - start + 1 < windowSize) start = Math.max(1, end - windowSize + 1);
+      let html = '';
+      for(let i=start;i<=end;i++){
+        html += `<li class="page-item ${i===page?'active':''}"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+      }
+      const nav = document.getElementById('pager');
+      nav.innerHTML = `<nav><ul class="pagination pagination-sm">${html}</ul></nav>`;
+      const navTop = document.getElementById('pager-top');
+      if(navTop){ navTop.innerHTML = `<nav><ul class="pagination pagination-sm justify-content-end">${html}</ul></nav>`; }
+      nav.querySelectorAll('a[data-page]').forEach(a=>{
+        a.addEventListener('click', e=>{ e.preventDefault(); window.reportPage=parseInt(a.dataset.page); loadData(); });
+      });
+      if(navTop){ navTop.querySelectorAll('a[data-page]').forEach(a=>{
+        a.addEventListener('click', e=>{ e.preventDefault(); window.reportPage=parseInt(a.dataset.page); loadData(); });
+      }); }
     }
     function renderRows(rows){
       const tb = document.querySelector('#tblReport tbody');
@@ -145,6 +179,7 @@
     document.getElementById('btnBuscar').addEventListener('click', loadData);
     loadData();
   </script>
+  <div id="pager" class="mt-2 d-flex justify-content-center"></div>
 </body>
 </html>
 

@@ -6,6 +6,9 @@
   <title>Dashboard CxC</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="/static/css/main.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 </head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -76,7 +79,7 @@
           <div class="card-header">Balance de Cartera (Dona) y Deuda por Tipo de Documento</div>
           <div class="card-body">
             <div class="row">
-              <div class="col-md-6"><canvas id="donutChart" height="180"></canvas></div>
+              <div class="col-md-6"><div id="echartsDonut" style="height:180px"></div></div>
               <div class="col-md-6"><canvas id="tipoDocChart" height="180"></canvas></div>
             </div>
           </div>
@@ -119,10 +122,11 @@
       const res = await fetch('/api/kpis' + (qs?('?' + qs):''));
       if(!res.ok) return;
       const data = await res.json();
+      const fmt = (n)=> new Intl.NumberFormat('es-PE',{minimumFractionDigits:2, maximumFractionDigits:2}).format(n||0);
       document.getElementById('kpi-total').textContent = data.total_facturas;
-      document.getElementById('kpi-vencido').textContent = data.monto_vencido;
-      document.getElementById('kpi-vigente').textContent = data.monto_vigente;
-      document.getElementById('kpi-morosidad').textContent = data.promedio_dias_morosidad;
+      document.getElementById('kpi-vencido').textContent = fmt(data.monto_vencido);
+      document.getElementById('kpi-vigente').textContent = fmt(data.monto_vigente);
+      document.getElementById('kpi-morosidad').textContent = fmt(data.promedio_dias_morosidad);
       renderDonut(data.monto_vigente, data.monto_vencido);
       renderTipoDoc(data.tipo_documento.labels, data.tipo_documento.values);
       renderTop10(data.top10.labels, data.top10.values);
@@ -130,8 +134,16 @@
     }
 
     function renderDonut(vigente, vencido){
-      const ctx = document.getElementById('donutChart');
-      new Chart(ctx, { type: 'doughnut', data: { labels:['Vigente','Vencido'], datasets:[{ data:[vigente, vencido], backgroundColor:['#198754','#dc3545'] }] }, options:{ responsive:true } });
+      const el = document.getElementById('echartsDonut');
+      const chart = echarts.init(el);
+      chart.setOption({
+        tooltip:{ trigger:'item', formatter:'{b}: {c} ({d}%)' },
+        series:[{ type:'pie', radius:['50%','70%'], avoidLabelOverlap:false,
+          label:{ show:false }, emphasis:{ label:{ show:true, fontSize:14, fontWeight:'bold' } },
+          data:[{value:vigente, name:'Vigente'},{value:vencido, name:'Vencido'}],
+          color:['#198754','#dc3545']
+        }]
+      });
     }
 
     function renderTipoDoc(labels, values){
@@ -141,10 +153,10 @@
     function renderMorosidad(labels, values){
       const container = document.createElement('div');
       container.className = 'card mt-3';
-      container.innerHTML = '<div class="card-header">Evolución del Índice de Morosidad (%)</div><div class="card-body"><canvas id="morosidadChart" height="120"></canvas></div>';
+      container.innerHTML = '<div class="card-header">Evolución del Índice de Morosidad (%)</div><div class="card-body"><div id="morosidadChart" style="height:120px"></div></div>';
       document.querySelector('.container').appendChild(container);
       const ctx = document.getElementById('morosidadChart');
-      new Chart(ctx, { type:'line', data:{ labels, datasets:[{ label:'% Morosidad', data: values, borderColor:'#dc3545', fill:false, tension:0.2 }] }, options:{ responsive:true } });
+      Plotly.newPlot(ctx, [{ x: labels, y: values, type:'scatter', mode:'lines+markers', line:{color:'#dc3545'} }], { margin:{t:10}, yaxis:{ title:'%'} }, {displayModeBar:false});
     }
 
     async function loadTop15(){
@@ -172,7 +184,7 @@
 
     function renderTop10(labels, values){
       const ctx = document.getElementById('top10Chart');
-      new Chart(ctx, { type:'bar', data:{ labels, datasets:[{ data: values, backgroundColor:'#0d6efd' }] }, options:{ indexAxis:'y', responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true } } } });
+      new Chart(ctx, { type:'bar', data:{ labels, datasets:[{ data: values, backgroundColor: values.map(v=> v>0? '#0d6efd':'#6c757d') }] }, options:{ indexAxis:'y', responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true } } } });
     }
 
     function renderTop15Table(rows){

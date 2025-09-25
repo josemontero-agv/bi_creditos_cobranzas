@@ -54,11 +54,11 @@ class OdooConnector:
         fields = [
             'name', 'partner_id', 'invoice_date', 'invoice_date_due',
             'amount_total', 'amount_residual', 'currency_id', 'invoice_origin',
-            'l10n_latam_document_type_id', 'move_type'
+            'l10n_latam_document_type_id', 'move_type', 'sales_channel_id'
         ]
         return self.search_read('account.move', domain, fields, limit=limit)
 
-    def get_report_lines(self, start_date: str | None = None, end_date: str | None = None, customer: str | None = None, limit: int = 0):
+    def get_report_lines(self, start_date: str | None = None, end_date: str | None = None, customer: str | None = None, limit: int = 0, account_codes: str | None = None):
         # Query account.move.line focused on receivable lines (with fallbacks)
         base_domain = [
             ['reconciled', '=', False],
@@ -83,29 +83,27 @@ class OdooConnector:
             'account_id',
             'move_id',
         ]
-        # Business filters (as en Odoo UI):
-        # - Cuenta 12 o 13, excluyendo 10, 133, 123
-        # Build (12% OR 13%) AND NOT 10% AND NOT 133% AND NOT 123%
-        # IMPORTANT: domain must be flat (no nested lists), so expand the OR inline
-        account_code_or = ['|', ['account_id.code', 'like', '12%'], ['account_id.code', 'like', '13%']]
-        excludes = [
-            ['account_id.code', 'not ilike', '10%'],
-            ['account_id.code', 'not ilike', '133%'],
-            ['account_id.code', 'not ilike', '123%'],
-        ]
+        # Filtros de negocio (Odoo 16):
+        # (account_id.code like '12%' OR like '13%')
+        # AND NOT contiene '10', '123', '133'
+        # AND tipo de cuenta por cobrar
+        # Si vienen códigos por parámetro, usarlos; si no, los predeterminados 1212, 122, 1312
+        if account_codes:
+            codes = [c.strip() for c in account_codes.split(',') if c.strip()]
+        else:
+            codes = ['1212', '122', '1312']
 
-        # Try with account_type (newer versions) + business code filter
-        domain_try = base_domain + account_code_or + excludes + [['account_id.account_type', '=', 'asset_receivable']]
-        try:
-            lines = self.search_read('account.move.line', domain_try, fields, limit=limit)
-        except Exception:
-            # Try with user_type_id.type (older versions)
-            domain_try = base_domain + account_code_or + excludes + [['account_id.user_type_id.type', '=', 'receivable']]
-            try:
-                lines = self.search_read('account.move.line', domain_try, fields, limit=limit)
-            except Exception:
-                # Fallback without account type filter (solo por códigos y demás filtros)
-                lines = self.search_read('account.move.line', base_domain + account_code_or + excludes, fields, limit=limit)
+        # Construir OR plano de Odoo: ['|', cond1, '|', cond2, cond3]
+        code_clauses = [[ 'account_id.code', 'like', f"{c}%" ] for c in codes]
+        account_code_tokens: list = []
+        for i, clause in enumerate(code_clauses):
+            if i > 0:
+                account_code_tokens.append('|')
+            account_code_tokens.append(clause)
+
+        # Dominio final
+        final_domain = base_domain + account_code_tokens + [['account_id.account_type', '=', 'asset_receivable']]
+        lines = self.search_read('account.move.line', final_domain, fields, limit=limit)
 
         # Collect related ids to batch read partners, accounts, moves
         partner_ids = sorted({l['partner_id'][0] for l in lines if isinstance(l.get('partner_id'), list)})

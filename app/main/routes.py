@@ -30,6 +30,7 @@ def api_kpis():
     start_date = request.args.get('start')
     end_date = request.args.get('end')
     customer = request.args.get('q')
+    channel = request.args.get('channel')
     try:
         connector = OdooConnector()
         invoices = connector.get_unpaid_invoices(start_date=start_date, end_date=end_date, customer=customer)
@@ -61,7 +62,11 @@ def api_kpis():
             if is_vencido:
                 partner = inv.get("partner_id")
                 name = partner[1] if isinstance(partner, list) and len(partner) >= 2 else str(partner)
-                top_clients_vencido[name] = top_clients_vencido.get(name, 0.0) + residual
+                # Filtrar por canal NACIONAL si se pide
+                sc = inv.get('sales_channel_id')
+                sc_name = sc[1] if isinstance(sc, list) and len(sc) >= 2 else ''
+                if (channel == 'NACIONAL' and sc_name == 'NACIONAL') or (channel is None):
+                    top_clients_vencido[name] = top_clients_vencido.get(name, 0.0) + residual
             # tipo de documento
             doc = inv.get("l10n_latam_document_type_id")
             doc_name = doc[1] if isinstance(doc, list) and len(doc) >= 2 else (inv.get("move_type") or "Desconocido")
@@ -159,6 +164,7 @@ def api_top15_details():
     start_date = request.args.get('start')
     end_date = request.args.get('end')
     customer = request.args.get('q')
+    account_codes = request.args.get('accounts')
     try:
         connector = OdooConnector()
         invoices = connector.get_unpaid_invoices(start_date=start_date, end_date=end_date, customer=customer)
@@ -240,10 +246,16 @@ def api_reports_data():
     start_date = request.args.get('start')
     end_date = request.args.get('end')
     customer = request.args.get('q')
+    account_codes = request.args.get('accounts')
+    page = int(request.args.get('page', '1'))
+    per_page = int(request.args.get('per_page', '50'))
     try:
         connector = OdooConnector()
-        rows = connector.get_report_lines(start_date=start_date, end_date=end_date, customer=customer)
-        return jsonify({"rows": rows})
+        rows = connector.get_report_lines(start_date=start_date, end_date=end_date, customer=customer, account_codes=account_codes)
+        total = len(rows)
+        start_idx = (page - 1) * per_page
+        end_idx = start_idx + per_page
+        return jsonify({"rows": rows[start_idx:end_idx], "total": total, "page": page, "per_page": per_page})
     except Exception as exc:
         return jsonify({"error": str(exc)}), 500
 
