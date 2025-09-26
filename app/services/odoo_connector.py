@@ -43,7 +43,8 @@ class OdooConnector:
         domain = [
             ['move_type', '=', 'out_invoice'],
             ['state', '=', 'posted'],
-            ['payment_state', 'in', ['not_paid', 'partial']]
+            ['payment_state', 'in', ['not_paid', 'partial']],
+            ['team_id.name', 'ilike', 'INTERNACIONAL']  # Filtro para canal INTERNACIONAL
         ]
         if start_date:
             domain.append(['invoice_date', '>=', start_date])
@@ -54,7 +55,7 @@ class OdooConnector:
         fields = [
             'name', 'partner_id', 'invoice_date', 'invoice_date_due',
             'amount_total', 'amount_residual', 'currency_id', 'invoice_origin',
-            'l10n_latam_document_type_id', 'move_type', 'sales_channel_id'
+            'l10n_latam_document_type_id', 'move_type', 'sales_channel_id', 'team_id'
         ]
         return self.search_read('account.move', domain, fields, limit=limit)
 
@@ -63,6 +64,7 @@ class OdooConnector:
         base_domain = [
             ['reconciled', '=', False],
             ['move_id.state', '=', 'posted'],
+            ['move_id.team_id.name', 'ilike', 'INTERNACIONAL']  # Filtro para canal INTERNACIONAL
         ]
         if start_date:
             base_domain.append(['date', '>=', start_date])

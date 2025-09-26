@@ -1,18 +1,1039 @@
-body { background-color: #f8f9fa; }
-/* Paleta Odoo-like */
-:root{
-  --odoo-primary:#714B67;
-  --odoo-secondary:#875A7B;
-  --odoo-accent:#00A09D;
+/* ===================================================================
+   BI CRÉDITOS Y COBRANZAS - ESTILO CORPORATIVO PROFESIONAL
+   Inspirado en dashboard-ventas con enfoque en análisis financiero
+   =================================================================== */
+
+/* =============== PALETA DE COLORES CORPORATIVA =============== */
+:root {
+    /* Colores principales inspirados en Odoo */
+    --odoo-primary: #714B67;
+    --odoo-secondary: #875A7B;
+    --odoo-accent: #00A09D;
+    
+    /* Paleta BI específica para créditos y cobranzas */
+    --color-success: #2ecc71;
+    --color-warning: #f39c12;
+    --color-danger: #e74c3c;
+    --color-info: #3498db;
+    --color-background: #f5f7fa;
+    --color-surface: #ffffff;
+    --color-muted: #6c757d;
+    
+    /* Gradientes profesionales */
+    --gradient-primary: linear-gradient(135deg, var(--odoo-primary) 0%, var(--odoo-secondary) 100%);
+    --gradient-success: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    --gradient-danger: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+    
+    /* Sombras corporativas */
+    --shadow-soft: 0 2px 10px rgba(113, 75, 103, 0.1);
+    --shadow-medium: 0 4px 20px rgba(113, 75, 103, 0.15);
+    --shadow-strong: 0 8px 30px rgba(113, 75, 103, 0.2);
+    
+    /* Tipografía */
+    --font-weight-light: 300;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
 }
-.navbar-light.bg-light{ border-bottom:2px solid var(--odoo-primary); }
-.btn-primary{ background-color:var(--odoo-primary); border-color:var(--odoo-primary); }
-.btn-primary:hover{ background-color:var(--odoo-secondary); border-color:var(--odoo-secondary); }
-.btn-success{ background-color:var(--odoo-accent); border-color:var(--odoo-accent); }
-.card-header{ background:#fff; color:var(--odoo-primary); font-weight:600; }
-.table thead th{ position:sticky; top:0; background:#fff; z-index:1; }
-.table{ font-size:0.92rem; }
-@media (max-width: 992px){ .table{ font-size:0.85rem; } }
-/* Forzar una sola línea por celda en reportes (scroll horizontal disponible) */
-#tblReport th, #tblReport td{ white-space:nowrap; vertical-align:middle; }
+
+/* =============== RESET Y BASE =============== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--color-background);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* =============== HEADER ESTILO DASHBOARD (Inspirado en sales.html) =============== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, var(--odoo-primary) 0%, var(--odoo-secondary) 100%);
+    color: white;
+    padding: 1.8rem 3rem; /* Padding extra amplio */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(113, 75, 103, 0.3);
+    margin: 1.5rem 2rem 2rem 2rem; /* Márgenes amplios */
+    font-family: 'Poppins', sans-serif;
+    min-height: 80px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-grow: 1;
+}
+
+.header-info h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    white-space: nowrap;
+}
+
+.header-nav {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Botones del header estilo sales.html */
+.btn-nav, .btn-salir {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.7rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-nav {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-nav:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-salir {
+    background: var(--gradient-danger);
+    color: white;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.btn-salir:hover {
+    background: var(--color-danger);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+/* Fallback para navbar si no se usa dashboard-header */
+.navbar {
+    background: var(--gradient-primary) !important;
+    border: none;
+    box-shadow: var(--shadow-medium);
+    padding: 1.2rem 0;
+    margin-bottom: 0;
+}
+
+.navbar .container-fluid {
+    max-width: 100%;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+.navbar-brand {
+    color: white !important;
+    font-weight: var(--font-weight-bold);
+    font-size: 1.6rem;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    text-decoration: none;
+    flex-grow: 1;
+    white-space: nowrap;
+}
+
+.navbar-brand:hover {
+    color: rgba(255,255,255,0.9) !important;
+}
+
+/* Botones de navegación uniformes para navbar */
+.navbar .btn {
+    margin-left: 0.5rem;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-medium);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.navbar .btn-outline-primary {
+    border: 2px solid rgba(255,255,255,0.8);
+    color: white;
+    background: transparent;
+}
+
+.navbar .btn-outline-primary:hover {
+    background: white;
+    border-color: white;
+    color: var(--odoo-primary);
+    transform: translateY(-1px);
+}
+
+.navbar .btn-outline-secondary {
+    border: 2px solid rgba(255,255,255,0.6);
+    color: rgba(255,255,255,0.9);
+    background: transparent;
+}
+
+.navbar .btn-outline-secondary:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.8);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* =============== BOTONES =============== */
+.btn {
+    font-weight: var(--font-weight-medium);
+    border-radius: 8px;
+    padding: 0.6rem 1.5rem;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: var(--shadow-soft);
+}
+
+.btn-primary {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--odoo-secondary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+    color: white;
+}
+
+.btn-success {
+    background: var(--gradient-success);
+    color: white;
+}
+
+.btn-success:hover {
+    background: var(--color-success);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+    color: white;
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--odoo-primary);
+    color: var(--odoo-primary);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: var(--odoo-primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-outline-secondary {
+    border: 2px solid var(--color-muted);
+    color: var(--color-muted);
+    background: transparent;
+}
+
+.btn-outline-secondary:hover {
+    background: var(--color-muted);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* =============== TARJETAS =============== */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+    background: var(--color-surface);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: var(--color-surface);
+    border-bottom: 3px solid var(--odoo-primary);
+    color: var(--odoo-primary);
+    font-weight: var(--font-weight-semibold);
+    font-size: 1.1rem;
+    padding: 1.2rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* =============== KPIs Y MÉTRICAS - TAMAÑOS DIFERENCIADOS =============== */
+.text-bg-light {
+    color: white !important;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.text-bg-light::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    pointer-events: none;
+}
+
+.text-bg-light:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-strong);
+}
+
+.text-bg-light .fw-bold {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    opacity: 0.9;
+}
+
+.text-bg-light .fs-3 {
+    font-weight: var(--font-weight-bold);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 1;
+}
+
+/* KPIs UNIFORMES - Tamaños más consistentes */
+#kpi-total, #kpi-vencido, #kpi-vigente, #kpi-morosidad {
+    font-size: 2.0rem !important;
+}
+
+.text-bg-light:has(#kpi-total) {
+    background: var(--gradient-primary) !important;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.text-bg-light:has(#kpi-vencido) {
+    background: var(--gradient-danger) !important;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.text-bg-light:has(#kpi-vigente) {
+    background: var(--gradient-success) !important;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.text-bg-light:has(#kpi-morosidad) {
+    background: linear-gradient(135deg, var(--color-warning) 0%, #e67e22 100%) !important;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* =============== TABLAS =============== */
+.table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+    font-size: 0.92rem;
+}
+
+.table thead th {
+    background: var(--odoo-primary);
+    color: white;
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    padding: 1rem 0.75rem;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table tbody td {
+    padding: 0.9rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #eee;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(113, 75, 103, 0.05);
+    transition: background-color 0.2s ease;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* =============== TABLA DE REPORTES MEGA-OPTIMIZADA (Inspirada en sales.html) =============== */
+.table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+    overflow-x: auto;
+    box-shadow: var(--shadow-medium);
+    max-height: 75vh; /* Altura optimizada para scroll vertical */
+    border: 1px solid #e0e0e0;
+}
+
+#tblReport {
+    width: 100% !important;
+    table-layout: auto; /* Cambiar a auto para mejor distribución */
+    margin-bottom: 0;
+    min-width: 2200px; /* Ancho mucho mayor para más información */
+    font-size: 0.85rem;
+    background: white;
+}
+
+/* Headers estilo Odoo con gradiente */
+#tblReport thead th {
+    background: var(--gradient-primary) !important;
+    color: white !important;
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.8rem;
+    padding: 1rem 0.8rem;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Configuración específica de anchos AMPLIADOS por columna */
+#tblReport th:nth-child(1), #tblReport td:nth-child(1) { width: 90px; min-width: 90px; }   /* Fecha */
+#tblReport th:nth-child(2), #tblReport td:nth-child(2) { width: 140px; min-width: 140px; } /* Tipo Documento */
+#tblReport th:nth-child(3), #tblReport td:nth-child(3) { width: 120px; min-width: 120px; } /* Número */
+#tblReport th:nth-child(4), #tblReport td:nth-child(4) { width: 130px; min-width: 130px; } /* Origen */
+#tblReport th:nth-child(5), #tblReport td:nth-child(5) { width: 90px; min-width: 90px; }   /* Cuenta Código */
+
+/* COLUMNAS MEGA-ANCHAS para mejor lectura */
+#tblReport th:nth-child(6), #tblReport td:nth-child(6) { /* Nombre de cuenta */
+    width: 250px !important; 
+    min-width: 250px !important;
+    white-space: normal !important; 
+    word-wrap: break-word;
+    line-height: 1.3;
+}
+
+#tblReport th:nth-child(7), #tblReport td:nth-child(7) { width: 120px; min-width: 120px; } /* DNI/RUC */
+
+#tblReport th:nth-child(8), #tblReport td:nth-child(8) { /* Cliente */
+    width: 280px !important; 
+    min-width: 280px !important;
+    white-space: normal !important; 
+    word-wrap: break-word;
+    line-height: 1.3;
+}
+
+#tblReport th:nth-child(9), #tblReport td:nth-child(9) { width: 110px; min-width: 110px; }   /* Monto */
+#tblReport th:nth-child(10), #tblReport td:nth-child(10) { width: 120px; min-width: 120px; } /* Monto residual */
+#tblReport th:nth-child(11), #tblReport td:nth-child(11) { width: 110px; min-width: 110px; } /* Fecha vencimiento */
+
+#tblReport th:nth-child(12), #tblReport td:nth-child(12) { /* Referencia */
+    width: 200px !important; 
+    min-width: 200px !important;
+    white-space: normal !important; 
+    word-wrap: break-word;
+    line-height: 1.3;
+}
+
+#tblReport th:nth-child(13), #tblReport td:nth-child(13) { /* Etiqueta */
+    width: 180px !important;
+    min-width: 180px !important;
+    white-space: normal !important; 
+    word-wrap: break-word;
+    line-height: 1.3;
+}
+
+#tblReport th:nth-child(14), #tblReport td:nth-child(14) { /* Vendedor */
+    width: 200px !important; 
+    min-width: 200px !important;
+    white-space: normal !important; 
+    word-wrap: break-word;
+    line-height: 1.3;
+}
+
+/* Columnas adicionales con anchos generosos */
+#tblReport th:nth-child(n+15), #tblReport td:nth-child(n+15) { 
+    width: 140px;
+    min-width: 140px;
+    white-space: nowrap;
+}
+
+/* Comportamiento INTERACTIVO de celdas (inspirado en sales.html) */
+#tblReport th, #tblReport td {
+    vertical-align: middle;
+    padding: 0.9rem 0.8rem;
+    border-bottom: 1px solid #eee;
+    transition: all 0.2s ease;
+}
+
+#tblReport tbody tr {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+#tblReport tbody tr:hover {
+    background: linear-gradient(135deg, rgba(113, 75, 103, 0.08) 0%, rgba(135, 90, 123, 0.05) 100%);
+    transform: scale(1.002);
+    box-shadow: 0 4px 12px rgba(113, 75, 103, 0.1);
+}
+
+/* Hover EXPANSION para celdas con mucha información */
+#tblReport td:hover {
+    background: #f0f8ff !important;
+    box-shadow: 0 4px 16px rgba(52, 152, 219, 0.2);
+    position: relative;
+    z-index: 10;
+    border-radius: 6px;
+    transform: scale(1.05);
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    max-width: none !important;
+}
+
+/* Para celdas críticas, expandir aún más */
+#tblReport td:nth-child(6):hover, /* Nombre cuenta */
+#tblReport td:nth-child(8):hover, /* Cliente */
+#tblReport td:nth-child(12):hover, /* Referencia */
+#tblReport td:nth-child(13):hover, /* Etiqueta */
+#tblReport td:nth-child(14):hover { /* Vendedor */
+    background: #e8f5e8 !important;
+    box-shadow: 0 6px 20px rgba(46, 204, 113, 0.25);
+    transform: scale(1.08);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Estilo para tabla Top 15 */
+#tblTop15 {
+    width: 100%;
+    table-layout: auto; /* Permitir que se ajuste automáticamente */
+}
+
+#tblTop15 tbody tr:hover {
+    background-color: rgba(46, 204, 113, 0.1);
+}
+
+/* =============== BOTONES UNIFORMES EN REPORTES =============== */
+.btn-success, .btn-primary {
+    background: var(--gradient-primary) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: var(--font-weight-medium);
+}
+
+.btn-success:hover, .btn-primary:hover {
+    background: var(--odoo-secondary) !important;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+/* =============== FORMULARIOS =============== */
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--odoo-primary);
+    box-shadow: 0 0 0 0.2rem rgba(113, 75, 103, 0.15);
+}
+
+.form-label {
+    font-weight: var(--font-weight-medium);
+    color: var(--odoo-primary);
+    margin-bottom: 0.5rem;
+}
+
+/* =============== ALERTAS Y MENSAJES =============== */
+.alert {
+    border: none;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: var(--font-weight-medium);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1) 0%, rgba(39, 174, 96, 0.1) 100%);
+    color: #27ae60;
+    border-left: 4px solid var(--color-success);
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.1) 0%, rgba(192, 57, 43, 0.1) 100%);
+    color: #c0392b;
+    border-left: 4px solid var(--color-danger);
+}
+
+/* =============== CONTENEDORES Y LAYOUT AMPLIADOS =============== */
+.container {
+    max-width: 98% !important; /* Usar casi todo el ancho disponible */
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.container-fluid {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+/* Container específico para reportes con más espacio */
+.reports-container {
+    max-width: 99% !important;
+    padding: 1.5rem;
+}
+
+/* =============== LOADING INDICATOR (Inspirado en sales.html) =============== */
+.loading-indicator {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(113, 75, 103, 0.95);
+    color: white;
+    padding: 2rem 3rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-strong);
+    z-index: 9999;
+    text-align: center;
+    font-weight: var(--font-weight-medium);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 1rem;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* =============== FILTROS MEJORADOS =============== */
+.filter-bar {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 2rem;
+    border-left: 4px solid var(--odoo-primary);
+}
+
+.filter-bar__content {
+    width: 100%;
+}
+
+.filter-bar form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: flex-end;
+    width: 100%;
+}
+
+.filter-bar .form-control,
+.filter-bar .form-select {
+    min-width: 160px;
+    font-size: 0.9rem;
+}
+
+/* =============== INFORMACIÓN DE RESULTADOS =============== */
+.results-info {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1.2rem 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 4px solid var(--color-info);
+    box-shadow: var(--shadow-soft);
+}
+
+.results-info strong {
+    color: var(--odoo-primary);
+    font-size: 1rem;
+}
+
+/* =============== PAGINACIÓN MEJORADA =============== */
+.pagination-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow-soft);
+    margin-top: 1.5rem;
+}
+
+.page-info {
+    padding: 0.5rem 1rem;
+    background: var(--color-background);
+    border-radius: 6px;
+    font-weight: var(--font-weight-medium);
+    color: var(--odoo-primary);
+}
+
+/* =============== GRÁFICOS =============== */
+canvas {
+    border-radius: 8px;
+}
+
+#echartsDonut, #morosidadChart {
+    border-radius: 8px;
+    background: white;
+}
+
+/* =============== RESPONSIVE - AJUSTES PARA KPIs DIFERENCIADOS =============== */
+@media (max-width: 992px) {
+    .table {
+        font-size: 0.85rem;
+    }
+    
+    /* KPIs responsive - uniformes pero escalados */
+    #kpi-total, #kpi-vencido, #kpi-vigente, #kpi-morosidad { 
+        font-size: 1.7rem !important; 
+    }
+    
+    .text-bg-light {
+        padding: 1.2rem;
+        min-height: auto !important;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Tabla responsive en tablets - mantener información amplia */
+    #tblReport {
+        min-width: 1800px;
+        font-size: 0.8rem;
+    }
+    
+    .container, .reports-container {
+        max-width: 96% !important;
+        padding-left: 0.8rem;
+        padding-right: 0.8rem;
+    }
+    
+    /* Dashboard Header responsive tablet */
+    .dashboard-header {
+        margin: 1rem 1.5rem;
+        padding: 1.5rem 2rem;
+    }
+    
+    .header-info h1 {
+        font-size: 1.6rem;
+    }
+    
+    .btn-nav, .btn-salir {
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    /* KPIs mobile - uniformes y compactos */
+    #kpi-total, #kpi-vencido, #kpi-vigente, #kpi-morosidad { 
+        font-size: 1.4rem !important; 
+    }
+    
+    .text-bg-light {
+        padding: 1rem;
+        min-height: 80px !important;
+    }
+    
+    .text-bg-light .fw-bold {
+        font-size: 0.8rem;
+    }
+    
+    /* Tabla mobile - información amplia con scroll horizontal optimizado */
+    #tblReport {
+        min-width: 1600px; /* Mantener amplio en mobile */
+        font-size: 0.75rem;
+    }
+    
+    #tblReport th, #tblReport td {
+        padding: 0.6rem 0.5rem;
+    }
+    
+    .container, .reports-container {
+        max-width: 98% !important;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    /* Dashboard Header responsive */
+    .dashboard-header {
+        margin: 1rem;
+        padding: 1.2rem 1.5rem;
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+        min-height: auto;
+    }
+    
+    .header-left, .header-nav {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .header-info h1 {
+        font-size: 1.4rem;
+        white-space: normal;
+        line-height: 1.3;
+    }
+    
+    .btn-nav, .btn-salir {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    /* Navbar mobile fallback */
+    .navbar .btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    /* KPIs extra small screens - uniformes */
+    #kpi-total, #kpi-vencido, #kpi-vigente, #kpi-morosidad { 
+        font-size: 1.2rem !important; 
+    }
+    
+    .text-bg-light {
+        padding: 0.8rem;
+        min-height: 70px !important;
+    }
+    
+    /* Dashboard Header extra small */
+    .dashboard-header {
+        margin: 0.5rem;
+        padding: 1rem;
+        gap: 0.8rem;
+    }
+    
+    .header-info h1 {
+        font-size: 1.2rem;
+        line-height: 1.2;
+    }
+    
+    .btn-nav, .btn-salir {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        gap: 4px;
+    }
+    
+    .header-nav {
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+}
+
+/* =============== ANIMACIONES =============== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.2s; }
+.card:nth-child(4) { animation-delay: 0.3s; }
+
+/* =============== ESTILOS ESPECÍFICOS PARA BI =============== */
+.bi-metric-positive {
+    color: var(--color-success) !important;
+    font-weight: var(--font-weight-bold);
+}
+
+.bi-metric-negative {
+    color: var(--color-danger) !important;
+    font-weight: var(--font-weight-bold);
+}
+
+.bi-metric-warning {
+    color: var(--color-warning) !important;
+    font-weight: var(--font-weight-bold);
+}
+
+/* Indicadores de estado financiero */
+.financial-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.financial-indicator.vigente {
+    background-color: var(--color-success);
+}
+
+.financial-indicator.vencido {
+    background-color: var(--color-danger);
+}
+
+.financial-indicator.por-vencer {
+    background-color: var(--color-warning);
+}
+
+/* =============== PAGINACIÓN =============== */
+.pagination {
+    margin: 0;
+}
+
+.page-link {
+    border: 1px solid #dee2e6;
+    color: var(--odoo-primary);
+    padding: 0.5rem 0.75rem;
+}
+
+.page-link:hover {
+    background-color: var(--odoo-primary);
+    border-color: var(--odoo-primary);
+    color: white;
+}
+
+.page-item.active .page-link {
+    background-color: var(--odoo-primary);
+    border-color: var(--odoo-primary);
+    color: white;
+}
+
+/* =============== UTILIDADES =============== */
+.text-end {
+    text-align: right !important;
+}
+
+.fw-semibold {
+    font-weight: var(--font-weight-semibold) !important;
+}
+
+.fw-bold {
+    font-weight: var(--font-weight-bold) !important;
+}
+
+/* =============== MEJORAS DE ACCESIBILIDAD =============== */
+.btn:focus, .form-control:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.2);
+}
+
+/* =============== MEJORAS ESPECÍFICAS PARA BI INTERNACIONAL =============== */
+.international-badge {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.currency-symbol {
+    font-size: 0.8em;
+    opacity: 0.8;
+    margin-right: 0.2rem;
+}
+
+/* Indicadores de estado de pago */
+.payment-status {
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.payment-status.not-paid {
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--color-danger);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.payment-status.partial {
+    background: rgba(243, 156, 18, 0.1);
+    color: var(--color-warning);
+    border: 1px solid rgba(243, 156, 18, 0.3);
+}
 

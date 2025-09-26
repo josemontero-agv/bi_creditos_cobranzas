@@ -3,22 +3,34 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reportes CxC</title>
+  <title>Reportes - Canal Internacional</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="/static/css/main.css" rel="stylesheet" />
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/dashboard">CxC Reporter</a>
-      <div class="d-flex gap-2">
-        <a class="btn btn-outline-primary" href="/dashboard">Dashboard</a>
-        <a class="btn btn-outline-secondary" href="/auth/logout">Salir</a>
+  <!-- Header estilo Dashboard amplio -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <div class="header-info">
+        <h1>REPORTES - CANAL INTERNACIONAL</h1>
       </div>
     </div>
-  </nav>
-  <div class="container py-3">
-    <div class="card mb-3">
-      <div class="card-body">
+    <div class="header-nav">
+      <a href="#" onclick="exportExcelWithLoading()" class="btn-nav"><i class="bi bi-file-earmark-excel"></i> Exportar</a>
+      <a href="/dashboard" class="btn-nav"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="/auth/logout" class="btn-salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
+    </div>
+  </div>
+  <!-- Loading Indicator -->
+  <div id="loading-indicator" class="loading-indicator">
+    <div class="loading-spinner"></div>
+    <div>Cargando datos del canal internacional...</div>
+  </div>
+
+  <div class="container reports-container">
+    <div class="filter-bar">
+      <div class="filter-bar__content">
         <form id="filtros" class="row g-2 align-items-end">
           <div class="col-sm-3">
             <label class="form-label">Desde</label>
@@ -36,6 +48,14 @@
             <label class="form-label">Cuentas (coma-separadas)</label>
             <input type="text" class="form-control" id="accounts" placeholder="1212,122,1312" />
           </div>
+          <div class="col-sm-2">
+            <label class="form-label">Resultados</label>
+            <select class="form-select" id="per_page">
+              <option value="100">100</option>
+              <option value="500" selected>500</option>
+              <option value="1000">1,000</option>
+            </select>
+          </div>
           <div class="col-sm-2 text-end">
             <button class="btn btn-primary w-100" id="btnBuscar" type="button">Buscar</button>
           </div>
@@ -43,9 +63,6 @@
             <div id="pager-top" class="text-end"></div>
           </div>
         </form>
-        <div class="mt-3 text-end">
-          <a id="btnExcel" class="btn btn-success" href="#">Exportar Excel</a>
-        </div>
       </div>
     </div>
 
@@ -116,8 +133,8 @@
       const end = document.getElementById('end').value;
       const q = document.getElementById('q').value;
       const accounts = document.getElementById('accounts') ? document.getElementById('accounts').value : '';
+      const per_page = document.getElementById('per_page') ? document.getElementById('per_page').value : '500';
       const page = window.reportPage || 1;
-      const per_page = window.reportPerPage || 100;
       const p = new URLSearchParams();
       if(start) p.set('start', start);
       if(end) p.set('end', end);
@@ -125,6 +142,8 @@
       if(accounts) p.set('accounts', accounts);
       p.set('page', page);
       p.set('per_page', per_page);
+      // Actualizar variable global
+      window.reportPerPage = parseInt(per_page);
       return p.toString();
     }
     async function loadData(){
@@ -176,10 +195,88 @@
         tb.appendChild(tr);
       });
     }
-    document.getElementById('btnBuscar').addEventListener('click', loadData);
+    // =============== FUNCIONALIDAD INTERACTIVA (Inspirada en sales.html) ===============
+    
+    // Loading indicator management
+    function showLoading() {
+      document.getElementById('loading-indicator').style.display = 'block';
+    }
+    
+    function hideLoading() {
+      document.getElementById('loading-indicator').style.display = 'none';
+    }
+    
+    // Enhanced loadData with loading states
+    const originalLoadData = loadData;
+    loadData = async function() {
+      showLoading();
+      try {
+        await originalLoadData();
+      } finally {
+        hideLoading();
+      }
+    };
+    
+    // Auto-hide loading on page load
+    window.addEventListener('load', function() {
+      hideLoading();
+    });
+    
+    // Scroll optimization for large datasets
+    let ticking = false;
+    function handleScroll() {
+      if (!ticking) {
+        requestAnimationFrame(function() {
+          const scrollHeight = document.documentElement.scrollHeight;
+          const scrollTop = document.documentElement.scrollTop;
+          const clientHeight = document.documentElement.clientHeight;
+          
+          // Preload optimization when user is near bottom
+          if (scrollTop + clientHeight > scrollHeight * 0.8) {
+            console.log('🚀 Usuario cerca del final, optimizando carga...');
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+    
+    window.addEventListener('scroll', handleScroll);
+    
+    // Enhanced form submission with loading state
+    document.getElementById('btnBuscar').addEventListener('click', function() {
+      showLoading();
+      loadData();
+    });
+    
+    // Auto-reload when changing results per page
+    document.getElementById('per_page').addEventListener('change', function() {
+      window.reportPage = 1; // Reset to first page
+      showLoading();
+      loadData();
+    });
+    
+    // Enhanced Excel export with loading feedback (Header button)
+    window.exportExcelWithLoading = function() {
+      showLoading();
+      const qs = buildQuery();
+      const exportUrl = '/api/reports/export.xlsx' + (qs ? ('?' + qs) : '');
+      
+      // Simulate delay for user feedback
+      setTimeout(() => {
+        window.location.href = exportUrl;
+        hideLoading();
+      }, 500);
+    };
+    
+    // Initialize
     loadData();
   </script>
-  <div id="pager" class="mt-2 d-flex justify-content-center"></div>
+  
+  <!-- Pagination Container -->
+  <div class="pagination-container">
+    <div id="pager" class="d-flex justify-content-center"></div>
+  </div>
 </body>
 </html>
 
