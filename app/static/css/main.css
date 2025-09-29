@@ -403,14 +403,63 @@ body {
     border-bottom: none;
 }
 
-/* =============== TABLA DE REPORTES MEGA-OPTIMIZADA (Inspirada en sales.html) =============== */
+/* =============== TABLA DE REPORTES MEGA-OPTIMIZADA Y DESLIZABLE =============== */
 .table-responsive {
     border-radius: 12px;
     overflow: hidden;
     overflow-x: auto;
+    overflow-y: auto; /* Scroll vertical y horizontal */
     box-shadow: var(--shadow-medium);
-    max-height: 75vh; /* Altura optimizada para scroll vertical */
+    max-height: 70vh; /* Altura dinámica según contenido */
+    min-height: 300px; /* Altura mínima para pocos resultados */
     border: 1px solid #e0e0e0;
+    position: relative;
+    /* Scroll suave */
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--odoo-primary) var(--color-background);
+}
+
+/* Scrollbar personalizado para WebKit */
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: var(--color-background);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: var(--odoo-primary);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: var(--odoo-secondary);
+}
+
+/* Indicador de scroll para usuario */
+.table-responsive::before {
+    content: '↔️ Desliza horizontalmente para ver más columnas';
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    background: rgba(113, 75, 103, 0.9);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.7rem;
+    z-index: 20;
+    opacity: 0.8;
+    pointer-events: none;
+    animation: fadeInOut 4s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0%, 80%, 100% { opacity: 0; }
+    20%, 60% { opacity: 0.8; }
 }
 
 #tblReport {
@@ -421,6 +470,80 @@ body {
     font-size: 0.85rem;
     background: white;
 }
+
+/* Sticky header para la tabla de reportes - MEJORADO */
+#tblReport thead th {
+    position: sticky;
+    top: 0;
+    background: #34495e !important;
+    color: white !important;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border-bottom: 2px solid #2c3e50;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 8px;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+/* Asegurar que el contenedor de tabla tenga el contexto correcto */
+.table-responsive {
+    position: relative;
+}
+
+/* Headers sticky mejorados con gradiente */
+#tblReport thead th {
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%) !important;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+#tblReport thead th:first-child {
+    border-left: none;
+}
+
+#tblReport thead th:last-child {
+    border-right: none;
+}
+
+/* Estilos de tabla mejorados basados en sales.html */
+#tblReport tbody tr {
+    transition: background-color 0.1s ease;
+}
+
+#tblReport tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+#tblReport td {
+    padding: 8px 6px;
+    border: 1px solid #ddd;
+    white-space: nowrap;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Expandir al hacer hover como en sales.html */
+#tblReport td:hover {
+    overflow: visible;
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: none;
+    background-color: #f0f8ff;
+    z-index: 5;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Columnas específicas con ancho fijo */
+#tblReport th:nth-child(1), #tblReport td:nth-child(1) { min-width: 100px; } /* Fecha */
+#tblReport th:nth-child(8), #tblReport td:nth-child(8) { min-width: 150px; } /* Cliente */
+#tblReport th:nth-child(9), #tblReport td:nth-child(9) { min-width: 100px; } /* Monto */
+#tblReport th:nth-child(10), #tblReport td:nth-child(10) { min-width: 100px; } /* Monto residual */
+#tblReport th:nth-child(22), #tblReport td:nth-child(22) { min-width: 120px; } /* Estado de Pago */
 
 /* Headers estilo Odoo con gradiente */
 #tblReport thead th {

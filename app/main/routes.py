@@ -9,19 +9,31 @@ main_bp = Blueprint("main", __name__, template_folder="templates")
 
 @main_bp.route("/")
 def index():
-    return render_template("dashboard.html")
+    return render_template("dashboard_internacional.html")
 
 
+@main_bp.route("/dashboard_internacional")
+@login_required
+def dashboard_internacional():
+    return render_template("dashboard_internacional.html")
+
+# Mantener ruta legacy para compatibilidad
 @main_bp.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html")
+    return render_template("dashboard_internacional.html")
 
 
+@main_bp.route("/reporte_cta_12_13")
+@login_required
+def reporte_cta_12_13():
+    return render_template("reporte_cta_12_13.html")
+
+# Mantener ruta legacy para compatibilidad
 @main_bp.route("/reports")
 @login_required
 def reports_view():
-    return render_template("reports.html")
+    return render_template("reporte_cta_12_13.html")
 
 
 @main_bp.route("/api/kpis")

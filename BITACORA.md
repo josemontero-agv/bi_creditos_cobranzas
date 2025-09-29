@@ -75,6 +75,70 @@
   - Mobile: Layout vertical centrado con gaps optimizados
   - Botones adaptativos con iconos escalables
 
+#### Fase 3: Reestructuración y Optimización Final
+- **📂 Renombrado de Archivos**:
+  - `dashboard.html` → `dashboard_internacional.html`
+  - `reports.html` → `reporte_cta_12_13.html`
+  - Rutas actualizadas: `/dashboard_internacional` y `/reporte_cta_12_13`
+  - Mantenidas rutas legacy para compatibilidad
+- **🔧 Extracción de Datos Completa** (`odoo_connector.py`):
+  - **Campos corregidos**: 22 campos específicos según especificaciones
+  - **Fix crítico**: `team_id` mapeado a `move_id/sales_channel_id`
+  - **Partner fields ampliados**: cod_client_sap, country_code, state_id, l10n_pe_district
+  - **Move fields completos**: l10n_latam_document_type_id, sales_type_id, invoice_user_id
+- **📊 Tabla Deslizable Inteligente**:
+  - **Altura dinámica**: 40vh (≤5 filas) → 55vh (≤15) → 65vh (≤50) → 75vh (>50)
+  - **Scroll personalizado**: Scrollbar con colores corporativos
+  - **Indicador visual**: Tooltip animado para guiar al usuario
+  - **Info de resultados**: Contador dinámico con emojis según cantidad
+
+#### Fase 4: Optimizaciones Específicas para Reportes CxC 12 y 13
+- **🏷️ Título Actualizado**: "Cuenta por Cobrar 12 y 13" (antes "Reportes - Canal Internacional")
+- **📋 Cuentas Contables Específicas**: 1212, 122, 1312, 132 (agregada cuenta 132)
+- **🗑️ Campo Eliminado**: "Dirección de destino" removido de tabla y odoo_connector.py
+- **📌 Headers Sticky**: Títulos de tabla permanecen visibles al hacer scroll vertical
+- **🧹 Botón Limpiar**: Funcionalidad completa para resetear formulario y paginación
+  - Limpia todos los campos del formulario
+  - Resetea variables globales (reportPage, reportPerPage)
+  - Quita clases "active" de paginación
+  - Limpia tabla y información de resultados
+  - Restaura altura original de tabla
+
+#### Fase 5: Corrección de Filtros y Nuevo Campo ✅
+- **🌍 Filtro de Canal Corregido**: Removido filtro `INTERNACIONAL` para mostrar TODOS los canales
+  - **Internacional**: Facturas del canal internacional
+  - **Nacional**: Facturas del canal nacional  
+  - **Ecommerce**: Facturas del canal ecommerce
+  - **Verificación**: `get_report_lines()` NO tiene filtro de canal en el dominio
+- **💳 Nuevo Campo "Estado de Pago"**: 
+  - **Campo técnico**: `move_id/payment_state` (payment_state del account.move)
+  - **Etiqueta usuario**: "Estado de Pago" (simplificado)
+  - **Ubicación**: Última columna de la tabla
+  - **Extracción**: Implementado en odoo_connector.py línea 281
+  - **HTML**: Campo añadido en tabla y array de columnas JavaScript
+- **📝 Mensajes Actualizados**:
+  - Loading: "Cargando datos de TODOS los canales..."
+  - Resultados: "Resultados de TODOS los Canales"
+
+#### Fase 6: Enriquecimiento de Datos y Mejoras de UI
+- **🔄 Metodología de Enriquecimiento**: Implementada la misma metodología de `odoo_manager.py`
+  - **Tabla base**: `account.move.line` (líneas contables)
+  - **Enriquecimiento**: `account.move`, `res.partner`, `account.account`
+  - **Resultado**: Sin celdas vacías, datos completos de múltiples tablas
+- **📌 Headers Sticky Mejorados**: 
+  - **Z-index**: 100 para evitar solapamientos
+  - **Gradiente**: Linear gradient para mejor visibilidad
+  - **Bordes**: Separadores sutiles entre columnas
+  - **Funcionalidad**: Headers permanecen visibles al hacer scroll
+- **📊 Estilos de Tabla Avanzados**:
+  - **Hover effects**: Expansión de celdas al pasar mouse
+  - **Anchos fijos**: Columnas específicas con min-width
+  - **Transiciones**: Animaciones suaves para mejor UX
+- **📤 Exportación Excel Mejorada**:
+  - **Parámetros**: Captura todos los filtros actuales
+  - **URL**: Construcción dinámica con URLSearchParams
+  - **Feedback**: Loading indicator durante exportación
+
 ## Requisitos de configuración
 Config esperada (por variables de `config.py`):
 - `ODOO_URL` (incluye esquema, p.ej. `https://...`)

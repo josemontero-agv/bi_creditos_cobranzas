@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reportes - Canal Internacional</title>
+  <title>Cuenta por Cobrar 12 y 13</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
   <link href="/static/css/main.css" rel="stylesheet" />
@@ -13,19 +13,19 @@
   <div class="dashboard-header">
     <div class="header-left">
       <div class="header-info">
-        <h1>REPORTES - CANAL INTERNACIONAL</h1>
+        <h1>CUENTA POR COBRAR 12 Y 13</h1>
       </div>
     </div>
     <div class="header-nav">
       <a href="#" onclick="exportExcelWithLoading()" class="btn-nav"><i class="bi bi-file-earmark-excel"></i> Exportar</a>
-      <a href="/dashboard" class="btn-nav"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a href="/dashboard_internacional" class="btn-nav"><i class="bi bi-speedometer2"></i> Dashboard</a>
       <a href="/auth/logout" class="btn-salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
     </div>
   </div>
   <!-- Loading Indicator -->
   <div id="loading-indicator" class="loading-indicator">
     <div class="loading-spinner"></div>
-    <div>Cargando datos del canal internacional...</div>
+    <div>Cargando datos de TODOS los canales...</div>
   </div>
 
   <div class="container reports-container">
@@ -46,7 +46,7 @@
           </div>
           <div class="col-sm-4">
             <label class="form-label">Cuentas (coma-separadas)</label>
-            <input type="text" class="form-control" id="accounts" placeholder="1212,122,1312" />
+            <input type="text" class="form-control" id="accounts" placeholder="1212,122,1312,132" />
           </div>
           <div class="col-sm-2">
             <label class="form-label">Resultados</label>
@@ -58,6 +58,11 @@
           </div>
           <div class="col-sm-2 text-end">
             <button class="btn btn-primary w-100" id="btnBuscar" type="button">Buscar</button>
+          </div>
+          <div class="col-sm-2">
+            <button class="btn btn-outline-secondary w-100" id="btnLimpiar" type="button">
+              <i class="bi bi-arrow-clockwise"></i> Limpiar
+            </button>
           </div>
           <div class="col-sm-3 ms-auto">
             <div id="pager-top" class="text-end"></div>
@@ -89,11 +94,11 @@
                 <th>Provincia</th>
                 <th>Distrito</th>
                 <th>Dirección completa</th>
-                <th>Dirección de destino</th>
                 <th>Código de país</th>
                 <th>País</th>
                 <th>Canal de venta</th>
                 <th>Tipo de venta</th>
+                <th>Estado de Pago</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -122,11 +127,11 @@
       { key: 'patner_id/state_id', label: 'Socio/Provincia' },
       { key: 'patner_id/l10n_pe_district', label: 'Socio/Distrito' },
       { key: 'patner_id/contact_adress', label: 'Socio/Dirección completa' },
-      { key: 'destiny_adress', label: 'Dirección de destino' },
       { key: 'patner_id/country_code', label: 'Socio/Código de país' },
       { key: 'patner_id/country_id', label: 'Socio/País' },
       { key: 'move_id/sales_channel_id', label: 'Asiento/Canal de venta' },
-      { key: 'move_id/sales_type_id', label: 'Asiento/Tipo de venta' }
+      { key: 'move_id/sales_type_id', label: 'Asiento/Tipo de venta' },
+      { key: 'move_id/payment_state', label: 'Estado de Pago' }
     ];
     function buildQuery(){
       const start = document.getElementById('start').value;
@@ -182,6 +187,25 @@
       const tb = document.querySelector('#tblReport tbody');
       tb.innerHTML = '';
       const fmt = (n)=> new Intl.NumberFormat('es-PE',{minimumFractionDigits:2, maximumFractionDigits:2}).format(n||0);
+      
+      // Ajustar altura de tabla según número de resultados
+      const tableContainer = document.querySelector('.table-responsive');
+      const rowCount = rows.length;
+      
+      if (rowCount <= 5) {
+        tableContainer.style.maxHeight = '40vh';
+        tableContainer.style.minHeight = '250px';
+      } else if (rowCount <= 15) {
+        tableContainer.style.maxHeight = '55vh';
+        tableContainer.style.minHeight = '400px';
+      } else if (rowCount <= 50) {
+        tableContainer.style.maxHeight = '65vh';
+        tableContainer.style.minHeight = '500px';
+      } else {
+        tableContainer.style.maxHeight = '75vh';
+        tableContainer.style.minHeight = '600px';
+      }
+      
       rows.forEach(r=>{
         const tr = document.createElement('tr');
         tr.innerHTML = columns.map(c=>{
@@ -194,6 +218,30 @@
         }).join('');
         tb.appendChild(tr);
       });
+      
+      // Mostrar información de resultados
+      updateResultsInfo(rows.length);
+    }
+    
+    // Función para mostrar información de resultados
+    function updateResultsInfo(count) {
+      const container = document.querySelector('.filter-bar');
+      let infoDiv = container.querySelector('.results-info');
+      
+      if (!infoDiv) {
+        infoDiv = document.createElement('div');
+        infoDiv.className = 'results-info mt-3';
+        container.appendChild(infoDiv);
+      }
+      
+      const perPage = document.getElementById('per_page').value;
+      const emoji = count >= perPage ? '📊' : count > 0 ? '✅' : '❌';
+      
+      infoDiv.innerHTML = `
+        <strong>${emoji} Resultados de TODOS los Canales:</strong> 
+        ${count} registros mostrados
+        ${count >= perPage ? `(mostrando primeros ${perPage})` : ''}
+      `;
     }
     // =============== FUNCIONALIDAD INTERACTIVA (Inspirada en sales.html) ===============
     
@@ -249,6 +297,53 @@
       loadData();
     });
     
+    // Botón limpiar con funcionalidad completa
+    document.getElementById('btnLimpiar').addEventListener('click', function() {
+      // Limpiar todos los campos del formulario
+      document.getElementById('start').value = '';
+      document.getElementById('end').value = '';
+      document.getElementById('q').value = '';
+      document.getElementById('accounts').value = '';
+      document.getElementById('per_page').value = '500';
+      
+      // Resetear variables globales
+      window.reportPage = 1;
+      window.reportPerPage = 500;
+      
+      // Limpiar la tabla
+      const tbody = document.querySelector('#tblReport tbody');
+      tbody.innerHTML = '';
+      
+      // Limpiar paginación y quitar clase active
+      const pager = document.getElementById('pager');
+      const pagerTop = document.getElementById('pager-top');
+      if (pager) pager.innerHTML = '';
+      if (pagerTop) pagerTop.innerHTML = '';
+      
+      // Quitar todas las clases "active" de paginación
+      document.querySelectorAll('.page-item.active').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      // Limpiar información de resultados
+      const resultsInfo = document.querySelector('.results-info');
+      if (resultsInfo) resultsInfo.remove();
+      
+      // Resetear altura de tabla
+      const tableContainer = document.querySelector('.table-responsive');
+      if (tableContainer) {
+        tableContainer.style.maxHeight = '70vh';
+        tableContainer.style.minHeight = '300px';
+      }
+      
+      // Mostrar mensaje de limpieza
+      showLoading();
+      setTimeout(() => {
+        hideLoading();
+        console.log('🧹 Formulario y tabla limpiados correctamente');
+      }, 300);
+    });
+    
     // Auto-reload when changing results per page
     document.getElementById('per_page').addEventListener('change', function() {
       window.reportPage = 1; // Reset to first page
@@ -256,14 +351,32 @@
       loadData();
     });
     
-    // Enhanced Excel export with loading feedback (Header button)
+    // Enhanced Excel export with loading feedback (Header button) - Basado en sales.html
     window.exportExcelWithLoading = function() {
       showLoading();
-      const qs = buildQuery();
-      const exportUrl = '/api/reports/export.xlsx' + (qs ? ('?' + qs) : '');
+      
+      // Obtener filtros actuales como en sales.html
+      const start = document.getElementById('start').value || '';
+      const end = document.getElementById('end').value || '';
+      const q = document.getElementById('q').value || '';
+      const accounts = document.getElementById('accounts').value || '';
+      const per_page = document.getElementById('per_page').value || '500';
+      
+      // Construir URL de exportación con parámetros
+      const params = new URLSearchParams();
+      if (start) params.append('start', start);
+      if (end) params.append('end', end);
+      if (q) params.append('q', q);
+      if (accounts) params.append('accounts', accounts);
+      params.append('per_page', per_page);
+      
+      // URL de exportación
+      const exportUrl = `/api/reports/export.xlsx?${params.toString()}`;
+      console.log('📊 Exportando CxC 12 y 13 a Excel:', exportUrl);
       
       // Simulate delay for user feedback
       setTimeout(() => {
+        // Crear enlace temporal para descarga como en sales.html
         window.location.href = exportUrl;
         hideLoading();
       }, 500);

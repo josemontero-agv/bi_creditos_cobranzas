@@ -61,10 +61,10 @@ class OdooConnector:
 
     def get_report_lines(self, start_date: str | None = None, end_date: str | None = None, customer: str | None = None, limit: int = 0, account_codes: str | None = None):
         # Query account.move.line focused on receivable lines (with fallbacks)
+        # SIN FILTRO DE CANAL - Para reportes CxC 12 y 13 necesitamos TODOS los canales
         base_domain = [
             ['reconciled', '=', False],
-            ['move_id.state', '=', 'posted'],
-            ['move_id.team_id.name', 'ilike', 'INTERNACIONAL']  # Filtro para canal INTERNACIONAL
+            ['move_id.state', '=', 'posted']
         ]
         if start_date:
             base_domain.append(['date', '>=', start_date])
@@ -89,11 +89,11 @@ class OdooConnector:
         # (account_id.code like '12%' OR like '13%')
         # AND NOT contiene '10', '123', '133'
         # AND tipo de cuenta por cobrar
-        # Si vienen códigos por parámetro, usarlos; si no, los predeterminados 1212, 122, 1312
+        # Si vienen códigos por parámetro, usarlos; si no, los predeterminados para CxC 12 y 13
         if account_codes:
             codes = [c.strip() for c in account_codes.split(',') if c.strip()]
         else:
-            codes = ['1212', '122', '1312']
+            codes = ['1212', '122', '1312', '132']
 
         # Construir OR plano de Odoo: ['|', cond1, '|', cond2, cond3]
         code_clauses = [[ 'account_id.code', 'like', f"{c}%" ] for c in codes]
@@ -118,10 +118,12 @@ class OdooConnector:
 
         if partner_ids:
             partner_map = {}
-            partner_fields_full = ['vat', 'state_id', 'l10n_pe_district', 'country_id', 'contact_address', 'cod_client_sap']
+            # Campos completos para partners (clientes) según especificaciones
+            partner_fields_full = ['vat', 'state_id', 'l10n_pe_district', 'country_id', 'contact_address', 'cod_client_sap', 'country_code']
             try:
                 partner_recs = self.models.execute_kw(self.db, self.uid, self.password, 'res.partner', 'read', [partner_ids], {'fields': partner_fields_full})
-            except Exception:
+            except Exception as e:
+                print(f"⚠️ Error extrayendo todos los campos del partner, usando campos básicos: {e}")
                 # Fallback without custom fields
                 partner_recs = self.models.execute_kw(self.db, self.uid, self.password, 'res.partner', 'read', [partner_ids], {'fields': ['vat', 'state_id', 'l10n_pe_district', 'country_id', 'contact_address']})
             partner_map = {p['id']: p for p in partner_recs}
@@ -133,11 +135,24 @@ class OdooConnector:
 
         if move_ids:
             move_map = {}
+            # Intentar obtener todos los campos necesarios para CxC 12 y 13 (todos los canales)
+            move_fields_base = ['invoice_origin', 'invoice_user_id', 'team_id', 'l10n_latam_document_type_id', 'name', 'ref', 'state']
+            move_fields_optional = ['sales_type_id', 'amount_total', 'invoice_date', 'invoice_date_due', 'currency_id', 'move_type', 'payment_state']
+            
             try:
-                move_fields = ['invoice_origin', 'invoice_user_id', 'sales_channel_id', 'sales_type_id']
-                move_recs = self.models.execute_kw(self.db, self.uid, self.password, 'account.move', 'read', [move_ids], {'fields': move_fields})
-            except Exception:
-                move_recs = self.models.execute_kw(self.db, self.uid, self.password, 'account.move', 'read', [move_ids], {'fields': ['invoice_origin', 'invoice_user_id']})
+                # Intentar con todos los campos
+                all_move_fields = move_fields_base + move_fields_optional
+                move_recs = self.models.execute_kw(self.db, self.uid, self.password, 'account.move', 'read', [move_ids], {'fields': all_move_fields})
+                print(f"✅ Extraídos todos los campos del move: {len(all_move_fields)} campos")
+            except Exception as e:
+                print(f"⚠️ Error extrayendo campos opcionales del move: {e}")
+                try:
+                    # Fallback sin campos opcionales
+                    move_recs = self.models.execute_kw(self.db, self.uid, self.password, 'account.move', 'read', [move_ids], {'fields': move_fields_base})
+                    print(f"✅ Extraídos campos básicos del move: {len(move_fields_base)} campos")
+                except Exception as e2:
+                    print(f"❌ Error crítico extrayendo campos del move: {e2}")
+                    move_recs = self.models.execute_kw(self.db, self.uid, self.password, 'account.move', 'read', [move_ids], {'fields': ['invoice_origin', 'invoice_user_id', 'team_id']})
             move_map = {m['id']: m for m in move_recs}
 
         # Build rows per requested schema
@@ -153,8 +168,9 @@ class OdooConnector:
                 return ''
 
             rows.append({
+                # Campos exactos según especificaciones del usuario
                 'date': l.get('date'),
-                'I10nn_latam_document_type_id': '',  # Placeholder unless field exists on move/line
+                'I10nn_latam_document_type_id': m2o_name(move.get('l10n_latam_document_type_id')),
                 'move_name': l.get('move_name'),
                 'invoice_origin': move.get('invoice_origin') or '',
                 'account_id/code': account.get('code') or '',
@@ -171,11 +187,13 @@ class OdooConnector:
                 'patner_id/state_id': m2o_name(partner.get('state_id')),
                 'patner_id/l10n_pe_district': partner.get('l10n_pe_district') or '',
                 'patner_id/contact_adress': partner.get('contact_address') or '',
-                'destiny_adress': '',
-                'patner_id/country_code': '',
+                'patner_id/country_code': partner.get('country_code') or '',
                 'patner_id/country_id': m2o_name(partner.get('country_id')),
-                'move_id/sales_channel_id': m2o_name(move.get('sales_channel_id')),
+                # CORRECCIÓN: team_id es el campo correcto para sales_channel_id en Odoo
+                'move_id/sales_channel_id': m2o_name(move.get('team_id')),
                 'move_id/sales_type_id': m2o_name(move.get('sales_type_id')),
+                # NUEVO: Estado de pago (payment_state)
+                'move_id/payment_state': move.get('payment_state') or '',
             })
 
         return rows
